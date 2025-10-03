@@ -1,0 +1,578 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    .wellness-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .wellness-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        position: relative;
+    }
+
+    .wellness-header h2 {
+        font-size: 2.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+        font-weight: 800;
+    }
+
+    .wellness-subtitle {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+    }
+
+    .wellness-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .wellness-card {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .wellness-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--card-color-1), var(--card-color-2));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
+    }
+
+    .wellness-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15), 0 24px 48px rgba(0, 0, 0, 0.1);
+    }
+
+    .wellness-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .water-card {
+        --card-color-1: #3b82f6;
+        --card-color-2: #06b6d4;
+    }
+
+    .mood-card {
+        --card-color-1: #ec4899;
+        --card-color-2: #f59e0b;
+    }
+
+    .gratitude-card {
+        --card-color-1: #10b981;
+        --card-color-2: #14b8a6;
+    }
+
+    .journal-card {
+        --card-color-1: #8b5cf6;
+        --card-color-2: #6366f1;
+    }
+
+    .card-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(135deg, var(--card-color-1), var(--card-color-2));
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .card-description {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.75rem;
+        font-size: 1rem;
+        transition: all 0.2s;
+        background: #f9fafb;
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+        outline: none;
+        border-color: var(--card-color-1);
+        background: white;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .form-textarea {
+        resize: vertical;
+        min-height: 100px;
+        font-family: inherit;
+    }
+
+    .form-select {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 1.25rem;
+        padding-right: 2.5rem;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 0.875rem 1.5rem;
+        border: none;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: linear-gradient(135deg, var(--card-color-1), var(--card-color-2));
+        color: white;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .submit-btn::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .submit-btn:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .submit-btn:active {
+        transform: translateY(0);
+    }
+
+    .water-tracker {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-end;
+    }
+
+    .water-input-wrapper {
+        flex: 1;
+    }
+
+    .quick-add {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .quick-btn {
+        flex: 1;
+        padding: 0.5rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
+
+    .quick-btn:hover {
+        border-color: var(--card-color-1);
+        color: var(--card-color-1);
+        background: #eff6ff;
+    }
+
+    .mood-options {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .mood-option {
+        padding: 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.75rem;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+        font-weight: 600;
+    }
+
+    .mood-option input[type="radio"] {
+        display: none;
+    }
+
+    .mood-option:hover {
+        border-color: var(--card-color-1);
+        background: #fef3f2;
+    }
+
+    .mood-option input[type="radio"]:checked + label {
+        background: linear-gradient(135deg, var(--card-color-1), var(--card-color-2));
+        color: white;
+        border-color: transparent;
+    }
+
+    .mood-emoji {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+
+    .view-entries-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 1.5rem;
+        padding: 3rem;
+        text-align: center;
+        color: white;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+
+    .view-entries-section h3 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+
+    .view-entries-section p {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+    }
+
+    .view-btn {
+        display: inline-block;
+        padding: 1rem 2.5rem;
+        background: white;
+        color: #667eea;
+        border-radius: 0.75rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .view-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .stats-bar {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 3rem;
+        flex-wrap: wrap;
+    }
+
+    .stat-card {
+        flex: 1;
+        min-width: 200px;
+        background: white;
+        padding: 1.5rem;
+        border-radius: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        text-align: center;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-top: 0.25rem;
+    }
+
+    @media (max-width: 768px) {
+        .wellness-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .wellness-header h2 {
+            font-size: 2rem;
+        }
+
+        .mood-options {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wellness-container">
+    <div class="wellness-header">
+        <h2>✨ Wellness Hub</h2>
+        <p class="wellness-subtitle">Your daily sanctuary for mind, body, and soul</p>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="stats-bar">
+        <div class="stat-card">
+            <div class="stat-number">8</div>
+            <div class="stat-label">Cups Today</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">12</div>
+            <div class="stat-label">Day Streak</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">😊</div>
+            <div class="stat-label">Current Mood</div>
+        </div>
+    </div>
+
+    <!-- Wellness Cards Grid -->
+    <div class="wellness-grid">
+        <!-- Water Intake Card -->
+        <div class="wellness-card water-card">
+            <div class="card-icon">💧</div>
+            <h3 class="card-title">Hydration Tracker</h3>
+            <p class="card-description">Stay refreshed and energized throughout your day</p>
+            
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="water">
+                
+                <div class="form-group">
+                    <label class="form-label">Cups of Water</label>
+                    <input type="number" name="amount" class="form-input" placeholder="Enter amount" min="1" max="20" required>
+                    <div class="quick-add">
+                        <button type="button" class="quick-btn" onclick="setWaterAmount(1)">+1</button>
+                        <button type="button" class="quick-btn" onclick="setWaterAmount(2)">+2</button>
+                        <button type="button" class="quick-btn" onclick="setWaterAmount(4)">+4</button>
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn">
+                    <span style="position: relative; z-index: 1;">Add Water</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Mood Tracker Card -->
+        <div class="wellness-card mood-card">
+            <div class="card-icon">🎭</div>
+            <h3 class="card-title">Mood Tracker</h3>
+            <p class="card-description">Check in with your emotions and track patterns</p>
+            
+            <form method="POST" id="moodForm">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="mood">
+                <input type="hidden" name="mood" id="selectedMood">
+                
+                <div class="form-group">
+                    <label class="form-label">How are you feeling?</label>
+                    <div class="mood-options">
+                        <div class="mood-option" onclick="selectMood('happy', this)">
+                            <input type="radio" name="mood_radio" value="happy" id="mood_happy">
+                            <label for="mood_happy" style="cursor: pointer; display: block;">
+                                <span class="mood-emoji">😊</span>
+                                Happy
+                            </label>
+                        </div>
+                        <div class="mood-option" onclick="selectMood('neutral', this)">
+                            <input type="radio" name="mood_radio" value="neutral" id="mood_neutral">
+                            <label for="mood_neutral" style="cursor: pointer; display: block;">
+                                <span class="mood-emoji">😐</span>
+                                Neutral
+                            </label>
+                        </div>
+                        <div class="mood-option" onclick="selectMood('sad', this)">
+                            <input type="radio" name="mood_radio" value="sad" id="mood_sad">
+                            <label for="mood_sad" style="cursor: pointer; display: block;">
+                                <span class="mood-emoji">😢</span>
+                                Sad
+                            </label>
+                        </div>
+                        <div class="mood-option" onclick="selectMood('stressed', this)">
+                            <input type="radio" name="mood_radio" value="stressed" id="mood_stressed">
+                            <label for="mood_stressed" style="cursor: pointer; display: block;">
+                                <span class="mood-emoji">😰</span>
+                                Stressed
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Notes (Optional)</label>
+                    <textarea name="notes" class="form-textarea" placeholder="What's on your mind?"></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn">
+                    <span style="position: relative; z-index: 1;">Save Mood</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Gratitude Journal Card -->
+        <div class="wellness-card gratitude-card">
+            <div class="card-icon">🙏</div>
+            <h3 class="card-title">Gratitude Journal</h3>
+            <p class="card-description">Cultivate positivity by noting what you're thankful for</p>
+            
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="gratitude">
+                
+                <div class="form-group">
+                    <label class="form-label">I'm grateful for...</label>
+                    <textarea name="text" class="form-textarea" placeholder="Something that brought you joy today" required></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn">
+                    <span style="position: relative; z-index: 1;">Save Gratitude</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Daily Journal Card -->
+        <div class="wellness-card journal-card">
+            <div class="card-icon">📔</div>
+            <h3 class="card-title">Daily Journal</h3>
+            <p class="card-description">Reflect on your day and capture your thoughts</p>
+            
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="journal">
+                
+                <div class="form-group">
+                    <label class="form-label">Today's Entry</label>
+                    <textarea name="entry" class="form-textarea" placeholder="Write your thoughts, dreams, and experiences..." required></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn">
+                    <span style="position: relative; z-index: 1;">Save Entry</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Entries Section -->
+    <div class="view-entries-section">
+        <h3>📚 Your Wellness Journey</h3>
+        <p>Explore your past entries and track your progress over time</p>
+        <a href="{% url 'view_journal' %}" class="view-btn">View All Entries →</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function setWaterAmount(amount) {
+        const input = document.querySelector('input[name="amount"]');
+        const currentValue = parseInt(input.value) || 0;
+        input.value = currentValue + amount;
+        input.focus();
+    }
+
+    function selectMood(mood, element) {
+        // Remove selection from all mood options
+        document.querySelectorAll('.mood-option').forEach(opt => {
+            opt.style.background = '';
+            opt.style.color = '';
+            opt.style.borderColor = '';
+        });
+        
+        // Style selected mood option
+        element.style.background = 'linear-gradient(135deg, #ec4899, #f59e0b)';
+        element.style.color = 'white';
+        element.style.borderColor = 'transparent';
+        
+        // Set hidden input value
+        document.getElementById('selectedMood').value = mood;
+        
+        // Check the radio button
+        document.getElementById('mood_' + mood).checked = true;
+    }
+
+    // Add form submission animations
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const btn = this.querySelector('.submit-btn');
+            btn.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                btn.style.transform = '';
+            }, 200);
+        });
+    });
+
+    // Add floating animation delay variation
+    document.querySelectorAll('.card-icon').forEach((icon, index) => {
+        icon.style.animationDelay = `${index * 0.2}s`;
+    });
+</script>
+{% endblock %}
