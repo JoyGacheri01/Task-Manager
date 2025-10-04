@@ -150,11 +150,45 @@
         </div>
     </div>
 
-    <!-- Calendar Section -->
-    <div class="calendar-section">
-        <h2>📅 Calendar View</h2>
-        <div id="calendar"></div>
-    </div>
+    <div class="container my-5">
+
+    <h2 class="mb-4 text-center text-primary fw-bold">Upcoming Deadlines</h2>
+
+    {% if upcoming_tasks %}
+        <div class="upcoming-deadlines mx-auto">
+            {% for task in upcoming_tasks %}
+                <div class="deadline-item">
+                    <div class="deadline-date">
+                        <span class="day">{{ task.due_date|date:"d" }}</span>
+                        <span class="month">{{ task.due_date|date:"M" }}</span>
+                    </div>
+
+                    <div class="deadline-info">
+                        <h5 class="mb-1">{{ task.title }}</h5>
+                        <p class="mb-1 text-muted small">
+                            {{ task.get_status_display }} • Due {{ task.due_date|date:"l, M d, Y" }}
+                        </p>
+                    </div>
+
+                    <div class="deadline-status">
+                        {% if task.status == 'completed' %}
+                            <span class="badge bg-success">Completed</span>
+                        {% elif task.status == 'in_progress' %}
+                            <span class="badge bg-info text-dark">In Progress</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-center text-muted mt-5">No upcoming deadlines 🎉</p>
+    {% endif %}
+</div>
+
+
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>

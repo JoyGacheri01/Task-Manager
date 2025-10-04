@@ -1,24 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
-      var calendarEl = document.getElementById('calendar');
-      var calendar = new FullCalendar.Calendar(calendarEl, {
-          initialView: 'dayGridMonth',
-          headerToolbar: {
-              left: 'prev,next today',
-              center: 'title',
-              right: 'dayGridMonth,timeGridWeek,timeGridDay'
-          },
-          events: [
-              // Add your task events here
-          ]
-      });
-      calendar.render();
 
-      // Update task counts
-      updateTaskCounts();
-
-      // Setup drag and drop
-      setupDragAndDrop();
-  });
 
   function updateTaskCounts() {
       const pending = document.querySelectorAll('#pending-list .task-item').length;

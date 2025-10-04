@@ -17,11 +17,17 @@ def index(request):
     tasks_in_progress= Task.objects.filter(status='in_progress')
     tasks_completed = Task.objects.filter(status='completed')
 
+    upcoming_tasks = Task.objects.filter(
+        due_date__gte=today
+    ).exclude(status='completed').order_by('due_date')[:5]
+
     context = {
+        'tasks':tasks,
         'tasks_today': tasks_today,
         'tasks_pending':tasks_pending,
         'tasks_in_progress':tasks_in_progress,
-        'tasks_completed':tasks_completed
+        'tasks_completed':tasks_completed,
+        'upcoming_tasks': upcoming_tasks
     }
     return render(request, 'index.html', context)
 
@@ -98,3 +104,4 @@ def update_task_status(request, id):
     task.save()
 
     return JsonResponse({'success': True, "new_status": task.get_status_display(), "new_order": task.order})
+
