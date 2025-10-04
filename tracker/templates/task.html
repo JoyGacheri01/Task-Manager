@@ -1,204 +1,188 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>My Tasks - Task Manager</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <style>
-      body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        padding: 2rem 0;
-      }
-      .container {
-        max-width: 900px;
-      }
-      .header-section {
-        background: white;
-        border-radius: 15px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-      }
-      .header-section h2 {
-        margin: 0;
-        color: #667eea;
+{% extends 'base.html' %}
+{% block content %}
+<div class="tasks-container">
+    <h2 class="page-title">🧠 My Task Board</h2>
+
+    {% if tasks %}
+        <div class="task-list">
+            {% for task in tasks %}
+            <div class="task-item">
+                <div class="task-info">
+                    <h4 class="task-title">{{ task.title }}</h4>
+                    {% if task.description %}
+                        <p class="task-desc">{{ task.description }}</p>
+                    {% endif %}
+                    <div class="task-meta">
+                        <span class="status-tag 
+                            {% if task.status == 'pending' %}pending
+                            {% elif task.status == 'in_progress' %}in-progress
+                            {% elif task.status == 'completed' %}completed{% endif %}">
+                            {{ task.get_status_display }}
+                        </span>
+                        <span class="due-date">📅 {{ task.due_date|date:"M d, Y" }}</span>
+                    </div>
+                </div>
+
+                <div class="task-actions">
+                    <a href="{% url 'update_task' task.id %}" class="action-btn edit" title="Edit Task">✏️</a>
+                    <a href="{% url 'delete_task' task.id %}" class="action-btn delete" title="Delete Task">🗑️</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="no-tasks">No tasks yet — add one to get started!</p>
+    {% endif %}
+</div>
+
+<style>
+    /* ===== Layout ===== */
+    body {
+        background: linear-gradient(145deg, #f7f9fc, #eef3f9);
+        font-family: "Poppins", sans-serif;
+    }
+
+    .tasks-container {
+        max-width: 750px;
+        margin: 60px auto;
+        background: #fff;
+        border-radius: 22px;
+        padding: 35px 45px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+    }
+
+    .page-title {
+        text-align: center;
         font-weight: 700;
-      }
-      .action-buttons {
+        font-size: 1.8rem;
+        background: linear-gradient(90deg, #007bff, #00bcd4);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 40px;
+    }
+
+    /* ===== Task List ===== */
+    .task-list {
         display: flex;
-        gap: 1rem;
-        margin-top: 1rem;
-      }
-      .btn-custom {
-        border-radius: 8px;
-        padding: 0.6rem 1.5rem;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        border: none;
-      }
-      .btn-add {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-      }
-      .btn-add:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        color: white;
-      }
-      .btn-back {
-        background: #6c757d;
-        color: white;
-      }
-      .btn-back:hover {
-        background: #5a6268;
-        transform: translateY(-2px);
-        color: white;
-      }
-      .task-card {
-        border: none;
-        border-radius: 15px;
-        overflow: hidden;
-        transition: all 0.3s ease;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        margin-bottom: 1.5rem;
-      }
-      .task-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-      }
-      .task-card .card-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        font-weight: 600;
-        font-size: 1.1rem;
-        padding: 1rem 1.5rem;
-      }
-      .task-card .card-body {
-        padding: 1.5rem;
-        background: white;
-      }
-      .task-card .card-title {
-        color: #667eea;
-        font-size: 0.9rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 0.8rem;
-      }
-      .task-card .card-text {
-        color: #495057;
-        line-height: 1.6;
-        margin-bottom: 1.5rem;
-      }
-      .btn-edit {
-        background: #667eea;
-        border: none;
-        border-radius: 8px;
-        padding: 0.5rem 1.5rem;
-        color: white;
-        font-weight: 600;
-        transition: all 0.3s ease;
-      }
-      .btn-edit:hover {
-        background: #5568d3;
-        transform: translateY(-2px);
-        color: white;
-      }
-      .task-card .card-footer {
-        background: #f8f9fa;
-        border-top: 1px solid #e9ecef;
-        padding: 1rem 1.5rem;
-        font-size: 0.85rem;
-        color: #6c757d;
-      }
-      .task-date {
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .task-item {
         display: flex;
         justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-      }
-      .date-item {
-        display: flex;
         align-items: center;
-        gap: 0.5rem;
-      }
-      .date-label {
+        background: #f9fbff;
+        border-radius: 14px;
+        padding: 18px 20px;
+        transition: all 0.3s ease;
+        border: 1px solid #e7ecf3;
+    }
+
+    .task-item:hover {
+        background: #eef6ff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 123, 255, 0.1);
+    }
+
+    .task-info {
+        flex: 1;
+        margin-right: 15px;
+    }
+
+    .task-title {
+        margin: 0;
+        font-size: 1.05rem;
         font-weight: 600;
-        color: #495057;
-      }
-      .empty-state {
-        background: white;
-        border-radius: 15px;
-        padding: 3rem;
-        text-align: center;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-      }
-      .empty-state h4 {
-        color: #667eea;
-        margin-bottom: 1rem;
-      }
-      .empty-state p {
+        color: #333;
+    }
+
+    .task-desc {
+        font-size: 0.88rem;
         color: #6c757d;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <!-- Header Section -->
-      <div class="header-section">
-        <h2>📋 My Tasks</h2>
-        <div class="action-buttons">
-          <a href="{% url 'add_task' %}" class="btn btn-custom btn-add">
-            ➕ Add New Task
-          </a>
-          <a href="{% url 'index' %}" class="btn btn-custom btn-back">
-            🏠 Back to Home
-          </a>
-        </div>
-      </div>
+        margin-top: 3px;
+    }
 
-      <!-- Tasks List -->
-      {% if tasks %}
-        {% for task in tasks %}
-        <div class="card task-card">
-          <div class="card-header">
-            {{ task.title }}
-          </div>
-          <div class="card-body">
-            <h5 class="card-title">Task Description</h5>
-            <p class="card-text">{{ task.description|default:"No description provided." }}</p>
-            <a href="{% url 'update_task' task.id %}" class="btn btn-edit">
-              ✏️ Edit Task
-            </a>
-          </div>
-          <div class="card-footer">
-            <div class="task-date">
-              <div class="date-item">
-                <span class="date-label">Created:</span>
-                <span>{{ task.created_at|date:"M d, Y - g:i A" }}</span>
-              </div>
-              {% if task.completed_at %}
-              <div class="date-item">
-                <span class="date-label">Completed:</span>
-                <span>{{ task.completed_at|date:"M d, Y - g:i A" }}</span>
-              </div>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-        {% endfor %}
-      {% else %}
-        <!-- Empty State -->
-        <div class="empty-state">
-          <h4>No tasks yet!</h4>
-          <p>Get started by creating your first task.</p>
-        </div>
-      {% endif %}
-    </div>
+    .task-meta {
+        font-size: 0.85rem;
+        margin-top: 5px;
+        color: #777;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-  </body>
-</html>
+    /* ===== Status Tags ===== */
+    .status-tag {
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.8rem;
+    }
+
+    .status-tag.pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .status-tag.in-progress {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .status-tag.completed {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    /* ===== Actions ===== */
+    .task-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .action-btn {
+        font-size: 1.2rem;
+        text-decoration: none;
+        transition: transform 0.2s ease, color 0.2s ease;
+    }
+
+    .action-btn:hover {
+        transform: scale(1.15);
+    }
+
+    .edit {
+        color: #007bff;
+    }
+
+    .delete {
+        color: #dc3545;
+    }
+
+    /* ===== No Tasks ===== */
+    .no-tasks {
+        text-align: center;
+        color: #888;
+        font-style: italic;
+        margin-top: 20px;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 768px) {
+        .tasks-container {
+            padding: 25px;
+        }
+
+        .task-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .task-actions {
+            flex-direction: row;
+            margin-top: 8px;
+        }
+    }
+</style>
+{% endblock %}

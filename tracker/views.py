@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect
 from django.db.models import Q
+from django.utils import timezone
+from datetime import datetime
 from django.views.decorators.http import require_POST
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404
@@ -8,7 +10,20 @@ from . models import Task, Category
 # Create your views here.
 def index(request):
     tasks = Task.objects.all().order_by('status','order', 'created_at')
-    return render(request, 'index.html')
+
+    today = timezone.now().date()
+    tasks_today = Task.objects.filter(due_date=today)
+    tasks_pending = Task.objects.filter(status='pending')
+    tasks_in_progress= Task.objects.filter(status='in_progress')
+    tasks_completed = Task.objects.filter(status='completed')
+
+    context = {
+        'tasks_today': tasks_today,
+        'tasks_pending':tasks_pending,
+        'tasks_in_progress':tasks_in_progress,
+        'tasks_completed':tasks_completed
+    }
+    return render(request, 'index.html', context)
 
 def tasks(request):
     tasks = Task.objects.all().order_by('status','order', 'created_at')
@@ -17,15 +32,17 @@ def tasks(request):
 def add_task(request):
     if request.method == 'POST':
         title = request.POST.get('title')
-        description = request.POST.get('description')
-        status = request.POST.get('status', "todo")  # New line to get status
-        due_date = request.POST.get('due_date')  
-        
+        status = request.POST.get('status', "pending")  # New line to get status
+        due_date_str = request.POST.get('due_date')  
+        due_date = None
+
+        if due_date_str:
+            due_date = datetime.strptime(due_date_str, "%Y-%m-%d").date()
         if not title:
             return render(request, "add_task.html", {'error': 'Title is required.'})
 
-        Task.objects.create(title=title, description=description, due_date=due_date, status=status)
-        return redirect('tasks')
+        Task.objects.create(title=title, due_date=due_date, status=status)
+        return redirect('/')
     return render(request, "add_task.html")
 
 def delete_task(request, id):
@@ -34,15 +51,21 @@ def delete_task(request, id):
     return redirect('/')
 
 def update_task(request, id):
-    task = Task.objects.get(id=id)
+    task = get_object_or_404(Task, id=id)
     if request.method == 'POST':
-        task.title = request.POST.get('title')
-        task.description = request.POST.get('description')
-        task.due_date = request.POST.get('due_date')  # New line to update due_date
+        title = request.POST.get('title')
+        status = request.POST.get('status', "pending")  # New line to get status
+        due_date_str = request.POST.get('due_date')  
+        due_date = None
 
+        if due_date_str:
+            due_date = datetime.strptime(due_date_str, "%Y-%m-%d").date()
         task.save()
+
+        Task.objects.create(title=title, due_date=due_date, status=status)
+
         return redirect('tasks')
-    return render(request, 'update_task.html', {'task': task})
+    return render(request, 'update_task.html', {'task': task, })
 
 def search_tasks(request):
     query = request.GET.get('q')
@@ -50,7 +73,7 @@ def search_tasks(request):
 
     if query:
         results = Task.objects.filter(
-            Q(title_icontains=query) | Q(description_icontains = query)
+            Q(title__icontains=query) | Q(description__icontains=query)
         )
 
     return render(request, 'search.html', {'results': results, 'query': query})
@@ -74,4 +97,4 @@ def update_task_status(request, id):
     task.order = order
     task.save()
 
-    return JsonResponse({'success': True, "new_status": task.get__status_display(), "new_order": task.order})
+    return JsonResponse({'success': True, "new_status": task.get_status_display(), "new_order": task.order})

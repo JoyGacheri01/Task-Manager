@@ -1,4 +1,4 @@
-  document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
       var calendarEl = document.getElementById('calendar');
       var calendar = new FullCalendar.Calendar(calendarEl, {
           initialView: 'dayGridMonth',
@@ -242,37 +242,7 @@
           to { opacity: 0; transform: translateX(100px); }
       }
 
-      /* Dark Mode Styles */
-      body.dark-mode {
-          --background: #1f2937;
-          --surface: #374151;
-          --text-primary: #f9fafb;
-          --text-secondary: #d1d5db;
-          --border: #4b5563;
-      }
-
-      body.dark-mode .header {
-          background: linear-gradient(135deg, #4c1d95 0%, #5b21b6 100%);
-      }
-
-      body.dark-mode .task-item {
-          background: #4b5563;
-      }
-
-      body.dark-mode .task-input,
-      body.dark-mode .priority-select {
-          background: #4b5563;
-          color: #f9fafb;
-          border-color: #6b7280;
-      }
-
-      body.dark-mode .sidebar {
-          background: #374151;
-      }
-
-      body.dark-mode .nav-link:hover {
-          background: #4b5563;
-      }
+      
   `;
   document.head.appendChild(style);
 

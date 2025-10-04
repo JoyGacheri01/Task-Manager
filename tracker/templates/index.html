@@ -1,246 +1,164 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Task Manager - Life Tracker{% endblock %}
+
 {% block extra_css %} 
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
 {% endblock %}
+
 {% block content %}
+<div class="main-container">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <h1>📋 Task Manager</h1>
+        <p class="dashboard-subtitle">Organize your day and achieve your goals</p>
+    </div>
 
-    <!-- Main Container -->
-    <div class="main-container">
-        <!-- Dashboard Header -->
-        <div class="dashboard-header">
-            <h1>📋 Task Manager</h1>
-            <p class="dashboard-subtitle">Organize your day and achieve your goals</p>
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card total">
+            <div class="stat-icon">📊</div>
+            <div class="stat-number">{{ tasks|length }}</div>
+            <div class="stat-label">Total Tasks</div>
         </div>
-
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-            <div class="stat-card total">
-                <div class="stat-header">
-                    <div class="stat-icon">📊</div>
-                </div>
-                <div class="stat-number">{{ tasks|length|default:"0" }}</div>
-                <div class="stat-label">Total Tasks</div>
-            </div>
-            <div class="stat-card pending">
-                <div class="stat-header">
-                    <div class="stat-icon">⏳</div>
-                </div>
-                <div class="stat-number" id="pending-count">0</div>
-                <div class="stat-label">Pending</div>
-            </div>
-            <div class="stat-card progress">
-                <div class="stat-header">
-                    <div class="stat-icon">🔄</div>
-                </div>
-                <div class="stat-number" id="progress-count">0</div>
-                <div class="stat-label">In Progress</div>
-            </div>
-            <div class="stat-card completed">
-                <div class="stat-header">
-                    <div class="stat-icon">✅</div>
-                </div>
-                <div class="stat-number" id="completed-count">0</div>
-                <div class="stat-label">Completed</div>
-            </div>
+        <div class="stat-card pending">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-number">{{ tasks_pending|length }}</div>
+            <div class="stat-label">Pending</div>
         </div>
-
-        <!-- Quick Add Task -->
-        <div class="quick-add">
-            <h3>➕ Add New Task</h3>
-            <form method="POST" action="{% url 'tasks' %}">
-                {% csrf_token %}
-                <div class="task-input-group">
-                    <div class="input-wrapper">
-                        <label class="input-label">Task Title</label>
-                        <input type="text" name="title" class="task-input" placeholder="What needs to be done?" required>
-                    </div>
-                    <div class="input-wrapper">
-                        <label class="input-label">Priority</label>
-                        <select name="priority" class="priority-select">
-                            <option value="high">🔴 High</option>
-                            <option value="medium" selected>🟡 Medium</option>
-                            <option value="low">🟢 Low</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="add-btn">Add Task</button>
-                </div>
-            </form>
+        <div class="stat-card progress">
+            <div class="stat-icon">🔄</div>
+            <div class="stat-number">{{ tasks_in_progress|length }}</div>
+            <div class="stat-label">In Progress</div>
         </div>
-
-        <!-- Task Columns -->
-        <div class="task-section">
-            <!-- Pending Tasks -->
-            <div class="task-column pending-column">
-                <div class="column-header">
-                    <div class="column-icon">⏳</div>
-                    <h3>Pending</h3>
-                    <span class="task-count">0</span>
-                </div>
-                <ul class="task-list" id="pending-list" data-status="pending">
-                    {% for task in tasks %}
-                        {% if task.status == 'pending' %}
-                        <li class="task-item" draggable="true" data-id="{{ task.id }}">
-                            <div class="task-header">
-                                <div class="task-title">{{ task.title }}</div>
-                                <div class="task-actions">
-                                    <button class="task-btn" onclick="editTask({{ task.id }})" title="Edit">✏️</button>
-                                    <button class="task-btn" onclick="deleteTask({{ task.id }})" title="Delete">🗑️</button>
-                                </div>
-                            </div>
-                            <span class="priority-badge priority-{{ task.priority|default:'medium' }}">
-                                {% if task.priority == 'high' %}🔴 High Priority
-                                {% elif task.priority == 'low' %}🟢 Low Priority
-                                {% else %}🟡 Medium Priority{% endif %}
-                            </span>
-                            <div class="task-order">
-                                <span class="order-label">Order:</span>
-                                <input type="number" class="order-input" value="{{ task.order|default:'0' }}" min="0" onchange="updateOrder({{ task.id }}, this.value)">
-                            </div>
-                        </li>
-                        {% endif %}
-                    {% endfor %}
-                </ul>
-            </div>
-
-            <!-- In Progress Tasks -->
-            <div class="task-column progress-column">
-                <div class="column-header">
-                    <div class="column-icon">🔄</div>
-                    <h3>In Progress</h3>
-                    <span class="task-count">0</span>
-                </div>
-                <ul class="task-list" id="progress-list" data-status="in_progress">
-                    {% for task in tasks %}
-                        {% if task.status == 'in_progress' %}
-                        <li class="task-item" draggable="true" data-id="{{ task.id }}">
-                            <div class="task-header">
-                                <div class="task-title">{{ task.title }}</div>
-                                <div class="task-actions">
-                                    <button class="task-btn" onclick="editTask({{ task.id }})" title="Edit">✏️</button>
-                                    <button class="task-btn" onclick="deleteTask({{ task.id }})" title="Delete">🗑️</button>
-                                </div>
-                            </div>
-                            <span class="priority-badge priority-{{ task.priority|default:'medium' }}">
-                                {% if task.priority == 'high' %}🔴 High Priority
-                                {% elif task.priority == 'low' %}🟢 Low Priority
-                                {% else %}🟡 Medium Priority{% endif %}
-                            </span>
-                            <div class="task-order">
-                                <span class="order-label">Order:</span>
-                                <input type="number" class="order-input" value="{{ task.order|default:'0' }}" min="0" onchange="updateOrder({{ task.id }}, this.value)">
-                            </div>
-                        </li>
-                        {% endif %}
-                    {% endfor %}
-                </ul>
-            </div>
-
-            <!-- Completed Tasks -->
-            <div class="task-column completed-column">
-                <div class="column-header">
-                    <div class="column-icon">✅</div>
-                    <h3>Completed</h3>
-                    <span class="task-count">0</span>
-                </div>
-                <ul class="task-list" id="completed-list" data-status="completed">
-                    {% for task in tasks %}
-                        {% if task.status == 'completed' %}
-                        <li class="task-item" draggable="true" data-id="{{ task.id }}">
-                            <div class="task-header">
-                                <div class="task-title">{{ task.title }}</div>
-                                <div class="task-actions">
-                                    <button class="task-btn" onclick="editTask({{ task.id }})" title="Edit">✏️</button>
-                                    <button class="task-btn" onclick="deleteTask({{ task.id }})" title="Delete">🗑️</button>
-                                </div>
-                            </div>
-                            <span class="priority-badge priority-{{ task.priority|default:'medium' }}">
-                                {% if task.priority == 'high' %}🔴 High Priority
-                                {% elif task.priority == 'low' %}🟢 Low Priority
-                                {% else %}🟡 Medium Priority{% endif %}
-                            </span>
-                            <div class="task-order">
-                                <span class="order-label">Order:</span>
-                                <input type="number" class="order-input" value="{{ task.order|default:'0' }}" min="0" onchange="updateOrder({{ task.id }}, this.value)">
-                            </div>
-                        </li>
-                        {% endif %}
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-
-        <!-- Calendar Section -->
-        <div class="calendar-section">
-            <h2>📅 Calendar View</h2>
-            <div id="calendar"></div>
+        <div class="stat-card completed">
+            <div class="stat-icon">✅</div>
+            <div class="stat-number">{{ tasks_completed|length }}</div>
+            <div class="stat-label">Completed</div>
         </div>
     </div>
 
-    <!-- Sidebar -->
-    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h2>Navigation</h2>
-            <button class="close-sidebar" onclick="toggleSidebar()">×</button>
+    <!-- Quick Add Task -->
+    <div class="quick-add">
+        <h3>➕ Add New Task</h3>
+        <form method="POST" action="{% url 'add_task' %}">
+            {% csrf_token %}
+            <div class="task-input-group">
+                <div class="input-wrapper">
+                    <label class="input-label">Task Title</label>
+                    <input type="text" name="title" class="task-input" placeholder="What needs to be done?" required>
+                </div>
+
+                <div class="input-wrapper">
+                    <label class="input-label">Description</label>
+                    <textarea name="description" class="task-input" placeholder="Describe your task..."></textarea>
+                </div>
+
+                <div class="input-wrapper">
+                    <label class="input-label">Due Date</label>
+                    <input type="date" name="due_date" class="task-input">
+                </div>
+
+                <div class="input-wrapper">
+                    <label class="input-label">Status</label>
+                    <select name="status" class="priority-select">
+                        <option value="pending" selected>Pending</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <button type="submit" class="add-btn">Add Task</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Task Columns -->
+    <div class="task-section">
+        <!-- Pending Tasks -->
+        <div class="task-column pending-column">
+            <div class="column-header">
+                <div class="column-icon">⏳</div>
+                <h3>Pending</h3>
+            </div>
+            <ul class="task-list">
+                {% for task in tasks_pending %}
+                <li class="task-item">
+                    <div class="task-header">
+                        <div class="task-title">{{ task.title }}</div>
+                        <div class="task-actions">
+                            <a href="{% url 'update_task' task.id %}" class="task-btn" title="Edit">✏️</a>
+                            <a href="{% url 'delete_task' task.id %}" class="task-btn" title="Delete">🗑️</a>
+                        </div>
+                    </div>
+                    <p>{{ task.description|default:"No description" }}</p>
+                    <small>Due: {{ task.due_date|default:"No due date" }}</small>
+                </li>
+                {% empty %}
+                <li>No pending tasks.</li>
+                {% endfor %}
+            </ul>
         </div>
-        <div class="sidebar-content">
-            <ul class="nav-list">
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <span class="nav-icon">📊</span>
-                        <span>Dashboard</span>
-                    </a>
+
+        <!-- In Progress Tasks -->
+        <div class="task-column progress-column">
+            <div class="column-header">
+                <div class="column-icon">🔄</div>
+                <h3>In Progress</h3>
+            </div>
+            <ul class="task-list">
+                {% for task in tasks_in_progress %}
+                <li class="task-item">
+                    <div class="task-header">
+                        <div class="task-title">{{ task.title }}</div>
+                        <div class="task-actions">
+                            <a href="{% url 'update_task' task.id %}" class="task-btn" title="Edit">✏️</a>
+                            <a href="{% url 'delete_task' task.id %}" class="task-btn" title="Delete">🗑️</a>
+                        </div>
+                    </div>
+                    <p>{{ task.description|default:"No description" }}</p>
+                    <small>Due: {{ task.due_date|default:"No due date" }}</small>
                 </li>
-                <li class="nav-item">
-                    <a href="{% url 'tasks' %}" class="nav-link active">
-                        <span class="nav-icon">📋</span>
-                        <span>Daily Planner</span>
-                    </a>
+                {% empty %}
+                <li>No tasks in progress.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Completed Tasks -->
+        <div class="task-column completed-column">
+            <div class="column-header">
+                <div class="column-icon">✅</div>
+                <h3>Completed</h3>
+            </div>
+            <ul class="task-list">
+                {% for task in tasks_completed %}
+                <li class="task-item">
+                    <div class="task-header">
+                        <div class="task-title">{{ task.title }}</div>
+                        <div class="task-actions">
+                            <a href="{% url 'update_task' task.id %}" class="task-btn" title="Edit">✏️</a>
+                            <a href="{% url 'delete_task' task.id %}" class="task-btn" title="Delete">🗑️</a>
+                        </div>
+                    </div>
+                    <p>{{ task.description|default:"No description" }}</p>
+                    <small>Due: {{ task.due_date|default:"No due date" }}</small>
                 </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <span class="nav-icon">🎯</span>
-                        <span>Goals & Tracking</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <span class="nav-icon">💚</span>
-                        <span>Wellness Hub</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <span class="nav-icon">💰</span>
-                        <span>Finances</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <span class="nav-icon">📔</span>
-                        <span>Journal</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <span class="nav-icon">👤</span>
-                        <span>Profile</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <span class="nav-icon">⚙️</span>
-                        <span>Settings</span>
-                    </a>
-                </li>
+                {% empty %}
+                <li>No completed tasks yet.</li>
+                {% endfor %}
             </ul>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <!-- Calendar Section -->
+    <div class="calendar-section">
+        <h2>📅 Calendar View</h2>
+        <div id="calendar"></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 {% block scripts %}
-    <script src="{% static 'js/main.js' %}"></script>
+<script src="{% static 'js/main.js' %}"></script>
 {% endblock %}
 {% endblock %}
