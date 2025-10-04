@@ -1,142 +1,246 @@
+{% extends "base.html" %}
 {% load static %}
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Goal Tracker</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-  </head>
-  <body>
+{% block title %}Task Manager - Life Tracker{% endblock %}
+{% block extra_css %} 
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+{% endblock %}
+{% block content %}
 
-    
-    <nav class="navbar navbar-dark bg-dark fixed-top">
-            <header>
-        <button id="theme-toggle">🌙 Dark Mode</button>
-    </header>
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#">Life Tracker</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDarkNavbar" aria-controls="offcanvasDarkNavbar" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasDarkNavbar" aria-labelledby="offcanvasDarkNavbarLabel">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="offcanvasDarkNavbarLabel">Dark offcanvas</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <h1>📋 Task Manager</h1>
+            <p class="dashboard-subtitle">Organize your day and achieve your goals</p>
         </div>
-        <div class="offcanvas-body">
-            <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-            <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#">Dashboard</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="{% url 'tasks' %}">Daily Planner</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#">Goals & Tracking</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#">Wellness Hub</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#">Finances</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#">Dashboard</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#">Journal</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#">Profile</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#">Settings</a>
-            </li>
-            </ul>
-            <form class="d-flex mt-3" role="search">
-            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
-            <button class="btn btn-success" type="submit">Search</button>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card total">
+                <div class="stat-header">
+                    <div class="stat-icon">📊</div>
+                </div>
+                <div class="stat-number">{{ tasks|length|default:"0" }}</div>
+                <div class="stat-label">Total Tasks</div>
+            </div>
+            <div class="stat-card pending">
+                <div class="stat-header">
+                    <div class="stat-icon">⏳</div>
+                </div>
+                <div class="stat-number" id="pending-count">0</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-card progress">
+                <div class="stat-header">
+                    <div class="stat-icon">🔄</div>
+                </div>
+                <div class="stat-number" id="progress-count">0</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+            <div class="stat-card completed">
+                <div class="stat-header">
+                    <div class="stat-icon">✅</div>
+                </div>
+                <div class="stat-number" id="completed-count">0</div>
+                <div class="stat-label">Completed</div>
+            </div>
+        </div>
+
+        <!-- Quick Add Task -->
+        <div class="quick-add">
+            <h3>➕ Add New Task</h3>
+            <form method="POST" action="{% url 'tasks' %}">
+                {% csrf_token %}
+                <div class="task-input-group">
+                    <div class="input-wrapper">
+                        <label class="input-label">Task Title</label>
+                        <input type="text" name="title" class="task-input" placeholder="What needs to be done?" required>
+                    </div>
+                    <div class="input-wrapper">
+                        <label class="input-label">Priority</label>
+                        <select name="priority" class="priority-select">
+                            <option value="high">🔴 High</option>
+                            <option value="medium" selected>🟡 Medium</option>
+                            <option value="low">🟢 Low</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="add-btn">Add Task</button>
+                </div>
             </form>
         </div>
+
+        <!-- Task Columns -->
+        <div class="task-section">
+            <!-- Pending Tasks -->
+            <div class="task-column pending-column">
+                <div class="column-header">
+                    <div class="column-icon">⏳</div>
+                    <h3>Pending</h3>
+                    <span class="task-count">0</span>
+                </div>
+                <ul class="task-list" id="pending-list" data-status="pending">
+                    {% for task in tasks %}
+                        {% if task.status == 'pending' %}
+                        <li class="task-item" draggable="true" data-id="{{ task.id }}">
+                            <div class="task-header">
+                                <div class="task-title">{{ task.title }}</div>
+                                <div class="task-actions">
+                                    <button class="task-btn" onclick="editTask({{ task.id }})" title="Edit">✏️</button>
+                                    <button class="task-btn" onclick="deleteTask({{ task.id }})" title="Delete">🗑️</button>
+                                </div>
+                            </div>
+                            <span class="priority-badge priority-{{ task.priority|default:'medium' }}">
+                                {% if task.priority == 'high' %}🔴 High Priority
+                                {% elif task.priority == 'low' %}🟢 Low Priority
+                                {% else %}🟡 Medium Priority{% endif %}
+                            </span>
+                            <div class="task-order">
+                                <span class="order-label">Order:</span>
+                                <input type="number" class="order-input" value="{{ task.order|default:'0' }}" min="0" onchange="updateOrder({{ task.id }}, this.value)">
+                            </div>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- In Progress Tasks -->
+            <div class="task-column progress-column">
+                <div class="column-header">
+                    <div class="column-icon">🔄</div>
+                    <h3>In Progress</h3>
+                    <span class="task-count">0</span>
+                </div>
+                <ul class="task-list" id="progress-list" data-status="in_progress">
+                    {% for task in tasks %}
+                        {% if task.status == 'in_progress' %}
+                        <li class="task-item" draggable="true" data-id="{{ task.id }}">
+                            <div class="task-header">
+                                <div class="task-title">{{ task.title }}</div>
+                                <div class="task-actions">
+                                    <button class="task-btn" onclick="editTask({{ task.id }})" title="Edit">✏️</button>
+                                    <button class="task-btn" onclick="deleteTask({{ task.id }})" title="Delete">🗑️</button>
+                                </div>
+                            </div>
+                            <span class="priority-badge priority-{{ task.priority|default:'medium' }}">
+                                {% if task.priority == 'high' %}🔴 High Priority
+                                {% elif task.priority == 'low' %}🟢 Low Priority
+                                {% else %}🟡 Medium Priority{% endif %}
+                            </span>
+                            <div class="task-order">
+                                <span class="order-label">Order:</span>
+                                <input type="number" class="order-input" value="{{ task.order|default:'0' }}" min="0" onchange="updateOrder({{ task.id }}, this.value)">
+                            </div>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Completed Tasks -->
+            <div class="task-column completed-column">
+                <div class="column-header">
+                    <div class="column-icon">✅</div>
+                    <h3>Completed</h3>
+                    <span class="task-count">0</span>
+                </div>
+                <ul class="task-list" id="completed-list" data-status="completed">
+                    {% for task in tasks %}
+                        {% if task.status == 'completed' %}
+                        <li class="task-item" draggable="true" data-id="{{ task.id }}">
+                            <div class="task-header">
+                                <div class="task-title">{{ task.title }}</div>
+                                <div class="task-actions">
+                                    <button class="task-btn" onclick="editTask({{ task.id }})" title="Edit">✏️</button>
+                                    <button class="task-btn" onclick="deleteTask({{ task.id }})" title="Delete">🗑️</button>
+                                </div>
+                            </div>
+                            <span class="priority-badge priority-{{ task.priority|default:'medium' }}">
+                                {% if task.priority == 'high' %}🔴 High Priority
+                                {% elif task.priority == 'low' %}🟢 Low Priority
+                                {% else %}🟡 Medium Priority{% endif %}
+                            </span>
+                            <div class="task-order">
+                                <span class="order-label">Order:</span>
+                                <input type="number" class="order-input" value="{{ task.order|default:'0' }}" min="0" onchange="updateOrder({{ task.id }}, this.value)">
+                            </div>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Calendar Section -->
+        <div class="calendar-section">
+            <h2>📅 Calendar View</h2>
+            <div id="calendar"></div>
         </div>
     </div>
-    </nav>
 
-
-    <section>
-    <div class="accordion" id="accordionPanelsStayOpenExample">
-        <div class="accordion-item">
-            <h2 class="accordion-header">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
-                Task Completed
-            </button>
-            </h2>
-            <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show">
-            <div class="accordion-body">
-                <strong>This is the first item’s accordion body.</strong> It is shown by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It’s also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
-            </div>
-            </div>
+    <!-- Sidebar -->
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Navigation</h2>
+            <button class="close-sidebar" onclick="toggleSidebar()">×</button>
         </div>
-        <div class="accordion-item">
-            <h2 class="accordion-header">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseTwo" aria-expanded="false" aria-controls="panelsStayOpen-collapseTwo">
-                Acco
-            </button>
-            </h2>
-            <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse">
-            <div class="accordion-body">
-                <strong>This is the second item’s accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It’s also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
-            </div>
-            </div>
-        </div>
-        <div class="accordion-item">
-            <h2 class="accordion-header">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseThree" aria-expanded="false" aria-controls="panelsStayOpen-collapseThree">
-                Accordion Item #3
-            </button>
-            </h2>
-            <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse">
-            <div class="accordion-body">
-                <strong>This is the third item’s accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It’s also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
-            </div>
-            </div>
+        <div class="sidebar-content">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'tasks' %}" class="nav-link active">
+                        <span class="nav-icon">📋</span>
+                        <span>Daily Planner</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">🎯</span>
+                        <span>Goals & Tracking</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">💚</span>
+                        <span>Wellness Hub</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        <span>Finances</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">📔</span>
+                        <span>Journal</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">👤</span>
+                        <span>Profile</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        <span>Settings</span>
+                    </a>
+                </li>
+            </ul>
         </div>
     </div>
-
-    </section>
-
-    <div id="calendar"></div>
-
-    <section class="container mt-5">
-    <ul id="task-list">
-        {% for task in tasks %}
-            <li>
-            <strong>{{ task.title }}</strong>
-
-            <!-- Status Dropdown -->
-            <select class="status-select" data-id="{{ task.id }}">
-                {% for key,label in task.STATUS_CHOICES %}
-                <option value="{{ key }}" {% if task.status == key %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
-
-            <!-- Order Input -->
-            <input type="number" class="order-input" data-id="{{ task.id }}" value="{{ task.order }}" min="0" style="width:60px;">
-            </li>
-        {% endfor %}
-    </ul>
-
-
-    </section>
-
-
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+{% block scripts %}
     <script src="{% static 'js/main.js' %}"></script>
-  </body>
-</html>
+{% endblock %}
+{% endblock %}

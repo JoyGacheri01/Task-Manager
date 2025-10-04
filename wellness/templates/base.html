@@ -1,330 +1,130 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Track your habits, goals, and daily progress">
+    <meta name="theme-color" content="#667eea">
     <title>{% block title %}Life Tracker{% endblock %}</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
     
-    <!-- CSS -->
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --secondary: #10b981;
-            --background: #f9fafb;
-            --surface: #ffffff;
-            --text-primary: #1f2937;
-            --text-secondary: #6b7280;
-            --border: #e5e7eb;
-            --error: #ef4444;
-            --warning: #f59e0b;
-            --success: #10b981;
-            --shadow: rgba(0, 0, 0, 0.1);
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: var(--background);
-            color: var(--text-primary);
-            line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Header */
-        .header {
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-            box-shadow: 0 1px 3px var(--shadow);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .navbar {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 2rem;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--primary);
-            text-decoration: none;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-            flex: 1;
-        }
-
-        .nav-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        .nav-links a:hover,
-        .nav-links a.active {
-            color: var(--primary);
-        }
-
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .btn {
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            font-weight: 500;
-            text-decoration: none;
-            transition: all 0.2s;
-            border: none;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: var(--text-secondary);
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        /* Main Content */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem 1.5rem;
-            flex: 1;
-        }
-
-        /* Messages */
-        .messages {
-            margin-bottom: 1.5rem;
-        }
-
-        .alert {
-            padding: 1rem 1.25rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .alert-success {
-            background: #d1fae5;
-            color: #065f46;
-            border-left: 4px solid var(--success);
-        }
-
-        .alert-error {
-            background: #fee2e2;
-            color: #991b1b;
-            border-left: 4px solid var(--error);
-        }
-
-        .alert-warning {
-            background: #fef3c7;
-            color: #92400e;
-            border-left: 4px solid var(--warning);
-        }
-
-        .alert-info {
-            background: #dbeafe;
-            color: #1e40af;
-            border-left: 4px solid var(--primary);
-        }
-
-        /* Footer */
-        .footer {
-            background: var(--surface);
-            border-top: 1px solid var(--border);
-            padding: 2rem 1.5rem;
-            margin-top: auto;
-        }
-
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .footer-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .footer-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
-
-        .footer-links a:hover {
-            color: var(--primary);
-        }
-
-        /* Mobile Menu */
-        .mobile-menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--text-primary);
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: var(--surface);
-                flex-direction: column;
-                padding: 1rem;
-                border-top: 1px solid var(--border);
-                box-shadow: 0 4px 6px var(--shadow);
-            }
-
-            .nav-links.active {
-                display: flex;
-            }
-
-            .mobile-menu-btn {
-                display: block;
-            }
-
-            .navbar {
-                flex-wrap: wrap;
-            }
-
-            .footer-content {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .footer-links {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-        }
-
-        /* Utility Classes */
-        .text-center { text-align: center; }
-        .mt-1 { margin-top: 0.5rem; }
-        .mt-2 { margin-top: 1rem; }
-        .mt-3 { margin-top: 1.5rem; }
-        .mb-1 { margin-bottom: 0.5rem; }
-        .mb-2 { margin-bottom: 1rem; }
-        .mb-3 { margin-bottom: 1.5rem; }
-        
-        {% block extra_css %}{% endblock %}
-    </style>
+    <!-- CSS -->    
+    <link rel="stylesheet" href="{% static 'css/wellness.css' %}">
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
     <!-- Header -->
     <header class="header">
-        <nav class="navbar">
+        <div class="header-content">
             <a href="/" class="logo">
                 <span>🎯</span>
                 <span>Life Tracker</span>
             </a>
-
-            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
-                ☰
-            </button>
-
-            <ul class="nav-links" id="navLinks">
-                <li><a href="/" class="{% block nav_home %}{% endblock %}">Dashboard</a></li>
-                <li><a href="/habits" class="{% block nav_habits %}{% endblock %}">Habits</a></li>
-                <li><a href="/goals" class="{% block nav_goals %}{% endblock %}">Goals</a></li>
-                <li><a href="/journal" class="{% block nav_journal %}{% endblock %}">Journal</a></li>
-                <li><a href="/analytics" class="{% block nav_analytics %}{% endblock %}">Analytics</a></li>
-            </ul>
-
-            <div class="user-menu">
-                {% block user_menu %}
-                <!-- If user is authenticated -->
-                <a href="/profile" class="btn btn-secondary">Profile</a>
-                <a href="/logout" class="btn btn-primary">Logout</a>
-                <!-- If user is not authenticated -->
-                <!-- <a href="/login" class="btn btn-secondary">Login</a>
-                <a href="/signup" class="btn btn-primary">Sign Up</a> -->
-                {% endblock %}
+            <div class="header-actions">
+                <button class="theme-toggle" id="theme-toggle">🌙 Dark Mode</button>
+                <button class="menu-btn" onclick="toggleSidebar()">☰ Menu</button>
             </div>
-        </nav>
+        </div>
     </header>
+
+    <!-- Sidebar Navigation -->
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Life Tracker</h2>
+            <p class="sidebar-subtitle">Your personal productivity hub</p>
+            <button class="close-sidebar" onclick="toggleSidebar()">×</button>
+        </div>
+        <div class="sidebar-content">
+            <!-- Main Navigation -->
+            <nav class="nav-section">
+                <h3 class="nav-section-title">Main</h3>
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="/" class="nav-link {% block nav_dashboard %}{% endblock %}">
+                            <span class="nav-icon">📊</span>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'tasks' %}" class="nav-link {% block nav_tasks %}{% endblock %}">
+                            <span class="nav-icon">📋</span>
+                            <span>Daily Planner</span>
+                            <span class="nav-badge">3</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/goals" class="nav-link {% block nav_goals %}{% endblock %}">
+                            <span class="nav-icon">🎯</span>
+                            <span>Goals & Tracking</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Wellness Section -->
+            <nav class="nav-section">
+                <h3 class="nav-section-title">Wellness</h3>
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="/wellness" class="nav-link {% block nav_wellness %}{% endblock %}">
+                            <span class="nav-icon">💚</span>
+                            <span>Wellness Hub</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/journal" class="nav-link {% block nav_journal %}{% endblock %}">
+                            <span class="nav-icon">📔</span>
+                            <span>Journal</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/habits" class="nav-link {% block nav_habits %}{% endblock %}">
+                            <span class="nav-icon">✅</span>
+                            <span>Habits</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Other Section -->
+            <nav class="nav-section">
+                <h3 class="nav-section-title">Other</h3>
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="/finances" class="nav-link {% block nav_finances %}{% endblock %}">
+                            <span class="nav-icon">💰</span>
+                            <span>Finances</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/profile" class="nav-link {% block nav_profile %}{% endblock %}">
+                            <span class="nav-icon">👤</span>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/settings" class="nav-link {% block nav_settings %}{% endblock %}">
+                            <span class="nav-icon">⚙️</span>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
 
     <!-- Messages -->
     {% if messages %}
-    <div class="container">
-        <div class="messages">
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                <span>{{ message }}</span>
-            </div>
-            {% endfor %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            <span>{{ message }}</span>
         </div>
+        {% endfor %}
     </div>
     {% endif %}
 
@@ -349,24 +149,7 @@
     </footer>
 
     <!-- JavaScript -->
-    <script>
-        function toggleMobileMenu() {
-            const navLinks = document.getElementById('navLinks');
-            navLinks.classList.toggle('active');
-        }
-
-        // Auto-dismiss alerts after 5 seconds
-        document.addEventListener('DOMContentLoaded', function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(alert => {
-                setTimeout(() => {
-                    alert.style.animation = 'slideIn 0.3s ease-out reverse';
-                    setTimeout(() => alert.remove(), 300);
-                }, 5000);
-            });
-        });
-
-        {% block extra_js %}{% endblock %}
-    </script>
+    <script src="{% static 'js/wellness.js' %}"></script>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>
