@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="daily-wrapper">
+    <!-- Header -->
+    <header class="daily-header">
+        <h1>🌞 Daily Focus</h1>
+        <p>Plan, track, and crush today’s goals</p>
+        <h5 class="date">{{ today|date:"l, F j, Y" }}</h5>
+    </header>
+
+    <!-- Add New Task -->
+    <section class="add-section">
+        <form method="POST" class="add-form">
+            {% csrf_token %}
+            <input type="text" name="title" placeholder="Add a new activity..." required>
+            <button type="submit">＋ Add</button>
+        </form>
+    </section>
+
+    <!-- Task List -->
+    <section class="task-section">
+        {% if daily_tasks %}
+            {% for task in daily_tasks %}
+                <div class="task-item {% if task.status == 'completed' %}done{% endif %}">
+                    <div class="task-left">
+                        <div class="status-icon">
+                            {% if task.status == 'completed' %}
+                                ✅
+                            {% elif task.status == 'in_progress' %}
+                                🔄
+                            {% else %}
+                                ⏳
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h3>{{ task.title }}</h3>
+                            {% if task.description %}
+                                <p>{{ task.description }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="task-right">
+                        {% if task.status == 'completed' %}
+                            <span class="status-badge completed">Completed</span>
+                        {% elif task.status == 'in_progress' %}
+                            <span class="status-badge progress">In Progress</span>
+                        {% else %}
+                            <span class="status-badge pending">Pending</span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <img src="https://cdn-icons-png.flaticon.com/512/10260/10260278.png" alt="Empty">
+                <p>No tasks for today yet — start your day strong 💪</p>
+            </div>
+        {% endif %}
+    </section>
+</div>
+
+<style>
+/* ========== LAYOUT ========== */
+.daily-wrapper {
+    max-width: 750px;
+    margin: 3rem auto;
+    padding: 2rem;
+    background: #f8fafc;
+    border-radius: 24px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+}
+.daily-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+.daily-header h1 {
+    font-size: 2.3rem;
+    font-weight: 700;
+    color: #0d6efd;
+}
+.daily-header p {
+    color: #6c757d;
+    margin-top: .25rem;
+}
+.daily-header .date {
+    font-size: 1rem;
+    color: #495057;
+    margin-top: .5rem;
+}
+
+/* ========== ADD TASK ========== */
+.add-section {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2.5rem;
+}
+.add-form {
+    display: flex;
+    background: #fff;
+    border-radius: 50px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    padding: .5rem;
+    width: 90%;
+    max-width: 600px;
+}
+.add-form input {
+    flex: 1;
+    border: none;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    border-radius: 50px;
+    outline: none;
+}
+.add-form button {
+    background: linear-gradient(135deg, #0d6efd, #2b6efc);
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    padding: 0.75rem 1.75rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+.add-form button:hover {
+    background: linear-gradient(135deg, #0b5ed7, #1a5af4);
+    transform: translateY(-2px);
+}
+
+/* ========== TASK LIST ========== */
+.task-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.task-item {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+    transition: 0.3s ease;
+}
+.task-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.06);
+}
+.task-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+.task-left h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+.task-left p {
+    color: #6c757d;
+    margin: 0.25rem 0 0;
+    font-size: 0.9rem;
+}
+.status-icon {
+    font-size: 1.5rem;
+}
+.task-right {
+    text-align: right;
+}
+.status-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.status-badge.pending {
+    background: #fff3cd;
+    color: #856404;
+}
+.status-badge.progress {
+    background: #cff4fc;
+    color: #055160;
+}
+.status-badge.completed {
+    background: #d1e7dd;
+    color: #0f5132;
+}
+.task-item.done {
+    opacity: 0.7;
+    text-decoration: line-through;
+}
+
+/* ========== EMPTY STATE ========== */
+.empty-state {
+    text-align: center;
+    margin-top: 3rem;
+}
+.empty-state img {
+    width: 120px;
+    opacity: 0.8;
+    margin-bottom: 1rem;
+}
+.empty-state p {
+    color: #6c757d;
+    font-size: 1.05rem;
+}
+</style>
+{% endblock %}

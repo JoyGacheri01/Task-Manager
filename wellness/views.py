@@ -9,7 +9,7 @@ def home(request):
 
         if form_type == "water":
             amount = request.POST.get("amount")
-            Waterintake.objects.create(amount=amount)
+            Waterintake.objects.create(cups=amount)
 
         elif form_type == "mood":
             mood = request.POST.get("mood")
@@ -17,12 +17,12 @@ def home(request):
             Mood.objects.create(mood=mood, notes=notes)
 
         elif form_type == "gratitude":
-            text = request.POST.get("text")
-            GratitudeEntry.objects.create(text=text)
+            entry = request.POST.get("entry")
+            GratitudeEntry.objects.create(entry=entry)
 
         elif form_type == "journal":
-            entry = request.POST.get("entry")
-            DailyJournal.objects.create(entry=entry)
+            summary = request.POST.get("summary")
+            DailyJournal.objects.create(summary=summary)
 
         return redirect("home")  
 
@@ -30,5 +30,7 @@ def home(request):
 
 
 def view_journal(request):
-    journal_logs = DailyJournal.objects.all().order_by('-date')
-    return render(request, "journal.html", {"journal_logs": journal_logs})
+    gratitude = GratitudeEntry.objects.all().order_by('-date')
+    journal = DailyJournal.objects.all().order_by('-date')
+    return render(request, "journal.html", {"journal": journal, 'gratitude':gratitude})
+

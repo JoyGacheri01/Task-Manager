@@ -438,9 +438,9 @@
     </div>
 
     <!-- Timeline -->
-    {% if journals %}
+    {% if journal %}
     <div class="timeline">
-        {% for journal in journals %}
+        {% for journal in journal %}
         <div class="journal-entry" data-date="{{ journal.date|date:'Y-m-d' }}">
             <div class="timeline-dot"></div>
             <div class="journal-card">
@@ -456,16 +456,16 @@
                     </div>
                 </div>
                 <div class="journal-content">
-                    {{ journal.entry }}
+                    {{ journal.summary }}
                 </div>
                 <div class="journal-meta">
                     <div class="meta-item">
                         <span>⏱️</span>
-                        <span>{{ journal.date|date:"g:i A" }}</span>
+                        <span>{{ journal.date }}</span>
                     </div>
                     <div class="meta-item">
                         <span>📊</span>
-                        <span>{{ journal.entry|wordcount }} words</span>
+                        <span>{{ journal.summary|wordcount }} words</span>
                     </div>
                     <div class="meta-item">
                         <span>🏷️</span>
@@ -488,6 +488,21 @@
     </div>
     {% endif %}
 
+    {% if gratitude %}
+        <h2>Gratitude Entries</h2>
+        {% for entry in gratitude %}
+            <div class="journal-entry">
+                <div class="journal-content">
+                    {{ entry.entry }}
+                </div>
+                <div class="journal-meta">
+                    <div class="meta-item">
+                        <span>{{ entry.date|date:"F j, Y" }}</span>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
     <!-- Back Button -->
     <a href="{% url 'home' %}" class="back-button">
         <span>←</span>

@@ -105,3 +105,18 @@ def update_task_status(request, id):
 
     return JsonResponse({'success': True, "new_status": task.get_status_display(), "new_order": task.order})
 
+
+def daily_tasks(request):
+    today = timezone.now().date()
+    daily_tasks = Task.objects.filter(due_date=today).order_by('status','created_at')
+
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        if title:
+            Task.objects.create(
+                title = title,
+                due_date = today,
+                status= "pending"
+            )
+        return redirect('daily_tasks')
+    return render(request, 'dailytasks.html', {'daily_tasks': daily_tasks})
