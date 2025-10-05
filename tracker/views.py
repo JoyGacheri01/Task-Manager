@@ -5,7 +5,7 @@ from datetime import datetime
 from django.views.decorators.http import require_POST
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404
-from . models import Task, Category
+from . models import Task, Finance, Category
 
 # Create your views here.
 def index(request):
@@ -120,3 +120,29 @@ def daily_tasks(request):
             )
         return redirect('daily_tasks')
     return render(request, 'dailytasks.html', {'daily_tasks': daily_tasks})
+
+def finance_tracker(request):
+    if request.method == 'POST':
+        name = request.POST.get('title')
+        amount = request.POST.get('amount')
+        type = request.POST.get('type')
+
+        Finance.objects.create(
+            name = name,
+            amount = amount,
+            type = type
+        )
+        return redirect('finance_tracker')
+    
+    finances = Finance.objects.all().order_by('-date')
+    total_income = sum(f.amount for f in finances if f.type == 'income')
+    total_expense = sum(f.amount for f in finances if f.type == 'expense')
+    balance = total_income - total_expense
+
+    context = {
+        'finances': finances,
+        'total_income': total_income,
+        'total_expense': total_expense, 
+        'balance': balance
+    }
+    return render(request, 'finance.html', context)

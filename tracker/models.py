@@ -31,3 +31,18 @@ class Task(models.Model):
     def __str__ (self):
         return self.title
 
+class Finance(models.Model):
+    TRASACTION_TYPES = [
+        ('income', 'Income'),
+        ('expense', 'Expense'),
+    ]
+    name = models.CharField(max_length=200)
+    type = models.CharField(max_length=10, choices=TRASACTION_TYPES)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.type} - {self.amount} on {self.date}"
+    
+      

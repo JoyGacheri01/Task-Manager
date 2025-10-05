@@ -1,0 +1,308 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+  <!-- Header Section -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+      <i class="bi bi-wallet2"></i> Finance Tracker
+    </h2>
+    <div>
+      <button class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#filterModal">
+        <i class="bi bi-funnel"></i> Filter
+      </button>
+      <button class="btn btn-outline-success btn-sm" onclick="exportToCSV()">
+        <i class="bi bi-download"></i> Export
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary Cards with Icons and Animations -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 h-100 summary-card income-card">
+        <div class="card-body d-flex align-items-center">
+          <div class="icon-wrapper bg-success bg-opacity-10 rounded-circle p-3 me-3">
+            <i class="bi bi-arrow-down-circle text-success fs-3"></i>
+          </div>
+          <div>
+            <h6 class="text-muted mb-1">Total Income</h6>
+            <h3 class="mb-0 text-success fw-bold">Ksh {{ total_income|floatformat:2|default:"0.00" }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 h-100 summary-card expense-card">
+        <div class="card-body d-flex align-items-center">
+          <div class="icon-wrapper bg-danger bg-opacity-10 rounded-circle p-3 me-3">
+            <i class="bi bi-arrow-up-circle text-danger fs-3"></i>
+          </div>
+          <div>
+            <h6 class="text-muted mb-1">Total Expenses</h6>
+            <h3 class="mb-0 text-danger fw-bold">Ksh {{ total_expense|floatformat:2|default:"0.00" }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 h-100 summary-card balance-card">
+        <div class="card-body d-flex align-items-center">
+          <div class="icon-wrapper bg-primary bg-opacity-10 rounded-circle p-3 me-3">
+            <i class="bi bi-piggy-bank text-primary fs-3"></i>
+          </div>
+          <div>
+            <h6 class="text-muted mb-1">Net Balance</h6>
+            <h3 class="mb-0 {% if balance >= 0 %}text-primary{% else %}text-warning{% endif %} fw-bold">
+              Ksh {{ balance|floatformat:2|default:"0.00" }}
+            </h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Transaction Form Card -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+      <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Add New Transaction</h5>
+      <button class="btn btn-sm btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#transactionForm">
+        <i class="bi bi-chevron-down"></i>
+      </button>
+    </div>
+    <div class="collapse show" id="transactionForm">
+      <div class="card-body">
+        <form method="POST" id="financeForm">
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label small text-muted">Title</label>
+              <input type="text" name="title" class="form-control" placeholder="e.g., Salary, Groceries" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small text-muted">Amount (Ksh)</label>
+              <input type="number" name="amount" class="form-control" placeholder="0.00" step="0.01" min="0" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small text-muted">Type</label>
+              <select name="transaction_type" class="form-select" required id="transactionType">
+                <option value="">Select Type</option>
+                <option value="Income">💰 Income</option>
+                <option value="Expense">💸 Expense</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small text-muted">Category</label>
+              <input type="text" name="category" class="form-control" placeholder="e.g., Food, Transport" list="categoryList">
+              <datalist id="categoryList">
+                <option value="Food & Dining">
+                <option value="Transportation">
+                <option value="Shopping">
+                <option value="Entertainment">
+                <option value="Bills & Utilities">
+                <option value="Healthcare">
+                <option value="Salary">
+                <option value="Freelance">
+                <option value="Investments">
+              </datalist>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small text-muted">Date</label>
+              <input type="date" name="date" class="form-control" value="{% now 'Y-m-d' %}">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small text-muted">Notes (Optional)</label>
+              <input type="text" name="notes" class="form-control" placeholder="Additional details">
+            </div>
+          </div>
+          <div class="mt-3 d-flex justify-content-end">
+            <button type="reset" class="btn btn-light me-2">Clear</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-circle"></i> Add Transaction
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transaction List -->
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white border-0">
+      <h5 class="mb-0"><i class="bi bi-list-ul"></i> Transaction History</h5>
+    </div>
+    <div class="card-body p-0">
+      {% if finances %}
+        <div class="table-responsive">
+          <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+              <tr>
+                <th class="border-0"><i class="bi bi-calendar3"></i> Date</th>
+                <th class="border-0"><i class="bi bi-tag"></i> Title</th>
+                <th class="border-0 text-end"><i class="bi bi-cash"></i> Amount</th>
+                <th class="border-0 text-center"><i class="bi bi-arrow-left-right"></i> Type</th>
+                <th class="border-0"><i class="bi bi-folder"></i> Category</th>
+                <th class="border-0"><i class="bi bi-sticky"></i> Notes</th>
+                <th class="border-0 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for f in finances %}
+                <tr class="transaction-row">
+                  <td class="text-muted">{{ f.date|date:"M d, Y" }}</td>
+                  <td class="fw-semibold">{{ f.title }}</td>
+                  <td class="text-end fw-bold {% if f.transaction_type == 'Income' %}text-success{% else %}text-danger{% endif %}">
+                    {% if f.transaction_type == 'Income' %}+{% else %}-{% endif %}
+                    Ksh {{ f.amount|floatformat:2 }}
+                  </td>
+                  <td class="text-center">
+                    {% if f.transaction_type == "Income" %}
+                      <span class="badge bg-success-subtle text-success">
+                        <i class="bi bi-arrow-down-circle"></i> Income
+                      </span>
+                    {% else %}
+                      <span class="badge bg-danger-subtle text-danger">
+                        <i class="bi bi-arrow-up-circle"></i> Expense
+                      </span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if f.category %}
+                      <span class="badge bg-light text-dark">{{ f.category }}</span>
+                    {% else %}
+                      <span class="text-muted">-</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-muted small">
+                    {{ f.notes|default:"-"|truncatewords:8 }}
+                  </td>
+                  <td class="text-center">
+                    <div class="btn-group btn-group-sm" role="group">
+                      <button class="btn btn-outline-primary" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button class="btn btn-outline-danger" title="Delete">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-center py-5">
+          <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+          <p class="text-muted mt-3">No transactions yet. Add your first transaction above!</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Filter Modal -->
+<div class="modal fade" id="filterModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Filter Transactions</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label class="form-label">Date Range</label>
+            <input type="date" class="form-control mb-2" placeholder="From">
+            <input type="date" class="form-control" placeholder="To">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Transaction Type</label>
+            <select class="form-select">
+              <option value="">All</option>
+              <option value="Income">Income</option>
+              <option value="Expense">Expense</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Category</label>
+            <select class="form-select">
+              <option value="">All Categories</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Apply Filter</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .summary-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .summary-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  }
+  .icon-wrapper {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .transaction-row {
+    transition: background-color 0.2s;
+  }
+  .transaction-row:hover {
+    background-color: #f8f9fa;
+  }
+  .badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+  }
+</style>
+
+<script>
+  // Export to CSV functionality
+  function exportToCSV() {
+    const table = document.querySelector('table');
+    if (!table) return;
+    
+    let csv = [];
+    const rows = table.querySelectorAll('tr');
+    
+    for (const row of rows) {
+      const cols = row.querySelectorAll('td, th');
+      const csvRow = [];
+      for (const col of cols) {
+        csvRow.push(col.innerText);
+      }
+      csv.push(csvRow.join(','));
+    }
+    
+    const csvFile = new Blob([csv.join('\n')], { type: 'text/csv' });
+    const downloadLink = document.createElement('a');
+    downloadLink.download = 'finance_tracker_' + new Date().toISOString().split('T')[0] + '.csv';
+    downloadLink.href = window.URL.createObjectURL(csvFile);
+    downloadLink.style.display = 'none';
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+  }
+  
+  // Form validation
+  document.getElementById('financeForm')?.addEventListener('submit', function(e) {
+    const amount = document.querySelector('input[name="amount"]').value;
+    if (parseFloat(amount) <= 0) {
+      e.preventDefault();
+      alert('Amount must be greater than 0');
+    }
+  });
+</script>
+{% endblock %}

@@ -8,6 +8,7 @@ urlpatterns = [
     path('delete_task/<int:id>/', views.delete_task, name='delete_task'),
     path('update_task/<int:id>/', views.update_task, name='update_task'),
     path('search_tasks/', views.search_tasks, name='search_tasks'),
-    path('daily/', views.daily_tasks, name='daily_tasks')
+    path('daily/', views.daily_tasks, name='daily_tasks'),
+    path('finance/', views.finance_tracker, name='finance'),
 
 ]

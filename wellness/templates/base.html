@@ -12,6 +12,8 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
     
     <!-- CSS -->    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/wellness.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
@@ -76,7 +78,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="/journal" class="nav-link {% block nav_journal %}{% endblock %}">
+                        <a href="{% url 'view_journal' %}" class="nav-link {% block nav_journal %}{% endblock %}">
                             <span class="nav-icon">📔</span>
                             <span>Journal</span>
                         </a>
@@ -95,7 +97,7 @@
                 <h3 class="nav-section-title">Other</h3>
                 <ul class="nav-list">
                     <li class="nav-item">
-                        <a href="/finances" class="nav-link {% block nav_finances %}{% endblock %}">
+                        <a href="{% url 'finance' %}" class="nav-link {% block nav_finances %}{% endblock %}">
                             <span class="nav-icon">💰</span>
                             <span>Finances</span>
                         </a>
