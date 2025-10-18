@@ -2,190 +2,222 @@
 {% load static %}
 {% block title %}Task Manager - Life Tracker{% endblock %}
 
-{% block extra_css %} 
-<link rel="stylesheet" href="{% static 'css/style.css' %}">
-{% endblock %}
-
 {% block content %}
-<div class="main-container">
+<div class="container-fluid py-4">
     <!-- Dashboard Header -->
-    <div class="dashboard-header">
-        <h1>📋 Task Manager</h1>
-        <p class="dashboard-subtitle">Organize your day and achieve your goals</p>
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h1 class="display-4 text-primary mb-2">📋 Task Manager</h1>
+            <p class="lead text-muted">Organize your day and achieve your goals</p>
+        </div>
     </div>
 
     <!-- Stats Grid -->
-    <div class="stats-grid">
-        <div class="stat-card total">
-            <div class="stat-icon">📊</div>
-            <div class="stat-number">{{ tasks|length }}</div>
-            <div class="stat-label">Total Tasks</div>
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card text-center border-primary">
+                <div class="card-body">
+                    <div class="fs-1 mb-2">📊</div>
+                    <h3 class="card-title text-primary">{{ tasks|length }}</h3>
+                    <p class="card-text text-muted">Total Tasks</p>
+                </div>
+            </div>
         </div>
-        <div class="stat-card pending">
-            <div class="stat-icon">⏳</div>
-            <div class="stat-number">{{ tasks_pending|length }}</div>
-            <div class="stat-label">Pending</div>
+        <div class="col-md-3">
+            <div class="card text-center border-warning">
+                <div class="card-body">
+                    <div class="fs-1 mb-2">⏳</div>
+                    <h3 class="card-title text-warning">{{ tasks_pending|length }}</h3>
+                    <p class="card-text text-muted">Pending</p>
+                </div>
+            </div>
         </div>
-        <div class="stat-card progress">
-            <div class="stat-icon">🔄</div>
-            <div class="stat-number">{{ tasks_in_progress|length }}</div>
-            <div class="stat-label">In Progress</div>
+        <div class="col-md-3">
+            <div class="card text-center border-info">
+                <div class="card-body">
+                    <div class="fs-1 mb-2">🔄</div>
+                    <h3 class="card-title text-info">{{ tasks_in_progress|length }}</h3>
+                    <p class="card-text text-muted">In Progress</p>
+                </div>
+            </div>
         </div>
-        <div class="stat-card completed">
-            <div class="stat-icon">✅</div>
-            <div class="stat-number">{{ tasks_completed|length }}</div>
-            <div class="stat-label">Completed</div>
+        <div class="col-md-3">
+            <div class="card text-center border-success">
+                <div class="card-body">
+                    <div class="fs-1 mb-2">✅</div>
+                    <h3 class="card-title text-success">{{ tasks_completed|length }}</h3>
+                    <p class="card-text text-muted">Completed</p>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Quick Add Task -->
-    <div class="quick-add">
-        <h3>➕ Add New Task</h3>
-        <form method="POST" action="{% url 'add_task' %}">
-            {% csrf_token %}
-            <div class="task-input-group">
-                <div class="input-wrapper">
-                    <label class="input-label">Task Title</label>
-                    <input type="text" name="title" class="task-input" placeholder="What needs to be done?" required>
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">➕ Add New Task</h5>
                 </div>
-
-                <div class="input-wrapper">
-                    <label class="input-label">Description</label>
-                    <textarea name="description" class="task-input" placeholder="Describe your task..."></textarea>
+                <div class="card-body">
+                    <form method="POST" action="{% url 'add_task' %}">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Task Title</label>
+                                <input type="text" name="title" class="form-control" placeholder="What needs to be done?" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Due Date</label>
+                                <input type="date" name="due_date" class="form-control">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Description</label>
+                                <textarea name="description" class="form-control" rows="2" placeholder="Describe your task..."></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Status</label>
+                                <select name="status" class="form-select">
+                                    <option value="pending" selected>Pending</option>
+                                    <option value="in_progress">In Progress</option>
+                                    <option value="completed">Completed</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">Add Task</button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
-
-                <div class="input-wrapper">
-                    <label class="input-label">Due Date</label>
-                    <input type="date" name="due_date" class="task-input">
-                </div>
-
-                <div class="input-wrapper">
-                    <label class="input-label">Status</label>
-                    <select name="status" class="priority-select">
-                        <option value="pending" selected>Pending</option>
-                        <option value="in_progress">In Progress</option>
-                        <option value="completed">Completed</option>
-                    </select>
-                </div>
-                <button type="submit" class="add-btn">Add Task</button>
             </div>
-        </form>
+        </div>
     </div>
 
     <!-- Task Columns -->
-    <div class="task-section">
+    <div class="row g-3">
         <!-- Pending Tasks -->
-        <div class="task-column pending-column">
-            <div class="column-header">
-                <div class="column-icon">⏳</div>
-                <h3>Pending</h3>
-            </div>
-            <ul class="task-list">
-                {% for task in tasks_pending %}
-                <li class="task-item">
-                    <div class="task-header">
-                        <div class="task-title">{{ task.title }}</div>
-                        <div class="task-actions">
-                            <a href="{% url 'update_task' task.id %}" class="task-btn" title="Edit">✏️</a>
-                            <a href="{% url 'delete_task' task.id %}" class="task-btn" title="Delete">🗑️</a>
+        <div class="col-md-4">
+            <div class="card h-100 border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">⏳ Pending</h5>
+                </div>
+                <div class="card-body">
+                    {% for task in tasks_pending %}
+                    <div class="card mb-2">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h6 class="card-title mb-1">{{ task.title }}</h6>
+                                <div>
+                                    <a href="{% url 'update_task' task.id %}" class="btn btn-sm btn-outline-primary me-1" title="Edit">✏️</a>
+                                    <a href="{% url 'delete_task' task.id %}" class="btn btn-sm btn-outline-danger" title="Delete">🗑️</a>
+                                </div>
+                            </div>
+                            <p class="card-text small text-muted mb-1">{{ task.description|default:"No description" }}</p>
+                            <small class="text-muted">Due: {{ task.due_date|default:"No due date" }}</small>
                         </div>
                     </div>
-                    <p>{{ task.description|default:"No description" }}</p>
-                    <small>Due: {{ task.due_date|default:"No due date" }}</small>
-                </li>
-                {% empty %}
-                <li>No pending tasks.</li>
-                {% endfor %}
-            </ul>
+                    {% empty %}
+                    <p class="text-center text-muted mt-3">No pending tasks.</p>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
 
         <!-- In Progress Tasks -->
-        <div class="task-column progress-column">
-            <div class="column-header">
-                <div class="column-icon">🔄</div>
-                <h3>In Progress</h3>
-            </div>
-            <ul class="task-list">
-                {% for task in tasks_in_progress %}
-                <li class="task-item">
-                    <div class="task-header">
-                        <div class="task-title">{{ task.title }}</div>
-                        <div class="task-actions">
-                            <a href="{% url 'update_task' task.id %}" class="task-btn" title="Edit">✏️</a>
-                            <a href="{% url 'delete_task' task.id %}" class="task-btn" title="Delete">🗑️</a>
+        <div class="col-md-4">
+            <div class="card h-100 border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">🔄 In Progress</h5>
+                </div>
+                <div class="card-body">
+                    {% for task in tasks_in_progress %}
+                    <div class="card mb-2">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h6 class="card-title mb-1">{{ task.title }}</h6>
+                                <div>
+                                    <a href="{% url 'update_task' task.id %}" class="btn btn-sm btn-outline-primary me-1" title="Edit">✏️</a>
+                                    <a href="{% url 'delete_task' task.id %}" class="btn btn-sm btn-outline-danger" title="Delete">🗑️</a>
+                                </div>
+                            </div>
+                            <p class="card-text small text-muted mb-1">{{ task.description|default:"No description" }}</p>
+                            <small class="text-muted">Due: {{ task.due_date|default:"No due date" }}</small>
                         </div>
                     </div>
-                    <p>{{ task.description|default:"No description" }}</p>
-                    <small>Due: {{ task.due_date|default:"No due date" }}</small>
-                </li>
-                {% empty %}
-                <li>No tasks in progress.</li>
-                {% endfor %}
-            </ul>
+                    {% empty %}
+                    <p class="text-center text-muted mt-3">No tasks in progress.</p>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
 
         <!-- Completed Tasks -->
-        <div class="task-column completed-column">
-            <div class="column-header">
-                <div class="column-icon">✅</div>
-                <h3>Completed</h3>
-            </div>
-            <ul class="task-list">
-                {% for task in tasks_completed %}
-                <li class="task-item">
-                    <div class="task-header">
-                        <div class="task-title">{{ task.title }}</div>
-                        <div class="task-actions">
-                            <a href="{% url 'update_task' task.id %}" class="task-btn" title="Edit">✏️</a>
-                            <a href="{% url 'delete_task' task.id %}" class="task-btn" title="Delete">🗑️</a>
+        <div class="col-md-4">
+            <div class="card h-100 border-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">✅ Completed</h5>
+                </div>
+                <div class="card-body">
+                    {% for task in tasks_completed %}
+                    <div class="card mb-2">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h6 class="card-title mb-1">{{ task.title }}</h6>
+                                <div>
+                                    <a href="{% url 'update_task' task.id %}" class="btn btn-sm btn-outline-primary me-1" title="Edit">✏️</a>
+                                    <a href="{% url 'delete_task' task.id %}" class="btn btn-sm btn-outline-danger" title="Delete">🗑️</a>
+                                </div>
+                            </div>
+                            <p class="card-text small text-muted mb-1">{{ task.description|default:"No description" }}</p>
+                            <small class="text-muted">Due: {{ task.due_date|default:"No due date" }}</small>
                         </div>
                     </div>
-                    <p>{{ task.description|default:"No description" }}</p>
-                    <small>Due: {{ task.due_date|default:"No due date" }}</small>
-                </li>
-                {% empty %}
-                <li>No completed tasks yet.</li>
-                {% endfor %}
-            </ul>
+                    {% empty %}
+                    <p class="text-center text-muted mt-3">No completed tasks yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="container my-5">
-
-    <h2 class="mb-4 text-center text-primary fw-bold">Upcoming Deadlines</h2>
-
-    {% if upcoming_tasks %}
-        <div class="upcoming-deadlines mx-auto">
-            {% for task in upcoming_tasks %}
-                <div class="deadline-item">
-                    <div class="deadline-date">
-                        <span class="day">{{ task.due_date|date:"d" }}</span>
-                        <span class="month">{{ task.due_date|date:"M" }}</span>
-                    </div>
-
-                    <div class="deadline-info">
-                        <h5 class="mb-1">{{ task.title }}</h5>
-                        <p class="mb-1 text-muted small">
-                            {{ task.get_status_display }} • Due {{ task.due_date|date:"l, M d, Y" }}
-                        </p>
-                    </div>
-
-                    <div class="deadline-status">
-                        {% if task.status == 'completed' %}
-                            <span class="badge bg-success">Completed</span>
-                        {% elif task.status == 'in_progress' %}
-                            <span class="badge bg-info text-dark">In Progress</span>
-                        {% else %}
-                            <span class="badge bg-warning text-dark">Pending</span>
-                        {% endif %}
-                    </div>
+    <div class="row mt-5">
+        <div class="col-12">
+            <h2 class="mb-4 text-center text-primary fw-bold">Upcoming Deadlines</h2>
+            {% if upcoming_tasks %}
+                <div class="row g-3">
+                    {% for task in upcoming_tasks %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                            <span class="fw-bold">{{ task.due_date|date:"d" }}</span>
+                                        </div>
+                                        <div>
+                                            <h5 class="card-title mb-0">{{ task.title }}</h5>
+                                            <small class="text-muted">{{ task.due_date|date:"M Y" }}</small>
+                                        </div>
+                                    </div>
+                                    <p class="card-text small text-muted mb-2">
+                                        {{ task.get_status_display }} • Due {{ task.due_date|date:"l, M d, Y" }}
+                                    </p>
+                                    {% if task.status == 'completed' %}
+                                        <span class="badge bg-success">Completed</span>
+                                    {% elif task.status == 'in_progress' %}
+                                        <span class="badge bg-info text-dark">In Progress</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
-            {% endfor %}
+            {% else %}
+                <p class="text-center text-muted mt-5">No upcoming deadlines 🎉</p>
+            {% endif %}
         </div>
-    {% else %}
-        <p class="text-center text-muted mt-5">No upcoming deadlines 🎉</p>
-    {% endif %}
-</div>
+    </div>
 
 
 

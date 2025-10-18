@@ -38,8 +38,9 @@ def tasks(request):
 def add_task(request):
     if request.method == 'POST':
         title = request.POST.get('title')
-        status = request.POST.get('status', "pending")  # New line to get status
-        due_date_str = request.POST.get('due_date')  
+        description = request.POST.get('description')
+        status = request.POST.get('status', "pending")
+        due_date_str = request.POST.get('due_date')
         due_date = None
 
         if due_date_str:
@@ -47,7 +48,7 @@ def add_task(request):
         if not title:
             return render(request, "add_task.html", {'error': 'Title is required.'})
 
-        Task.objects.create(title=title, due_date=due_date, status=status)
+        Task.objects.create(title=title, description=description, due_date=due_date, status=status)
         return redirect('/')
     return render(request, "add_task.html")
 
@@ -60,18 +61,22 @@ def update_task(request, id):
     task = get_object_or_404(Task, id=id)
     if request.method == 'POST':
         title = request.POST.get('title')
-        status = request.POST.get('status', "pending")  # New line to get status
-        due_date_str = request.POST.get('due_date')  
+        description = request.POST.get('description')
+        status = request.POST.get('status', task.status)
+        due_date_str = request.POST.get('due_date')
         due_date = None
 
         if due_date_str:
             due_date = datetime.strptime(due_date_str, "%Y-%m-%d").date()
+
+        task.title = title
+        task.description = description
+        task.status = status
+        task.due_date = due_date
         task.save()
 
-        Task.objects.create(title=title, due_date=due_date, status=status)
-
-        return redirect('tasks')
-    return render(request, 'update_task.html', {'task': task, })
+        return redirect('/')
+    return render(request, 'update_task.html', {'task': task})
 
 def search_tasks(request):
     query = request.GET.get('q')

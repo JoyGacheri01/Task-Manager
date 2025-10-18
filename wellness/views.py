@@ -17,12 +17,14 @@ def home(request):
             Mood.objects.create(mood=mood, notes=notes)
 
         elif form_type == "gratitude":
-            entry = request.POST.get("entry")
-            GratitudeEntry.objects.create(entry=entry)
+            entry = request.POST.get("text")
+            if entry:
+                GratitudeEntry.objects.create(entry=entry)
 
         elif form_type == "journal":
             summary = request.POST.get("summary")
-            DailyJournal.objects.create(summary=summary)
+            if summary:
+                DailyJournal.objects.create(summary=summary)
 
         return redirect("home")  
 
